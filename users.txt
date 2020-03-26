@@ -1,0 +1,6 @@
+pi
+root
+admin
+user
+kali
+john

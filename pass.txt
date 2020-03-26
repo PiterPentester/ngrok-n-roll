@@ -1,0 +1,7 @@
+raspberry
+toor
+pass
+password
+12345
+12345678
+1234567890

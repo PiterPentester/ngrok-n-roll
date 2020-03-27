@@ -13,7 +13,7 @@ print("          d8888P                                                         
 print("")
 print("################################################################################################")
 print("")
-print("Inspired by @id")
+print("Inspired by @id2746 <>")
 print("Developed by piter_pentester")
 print("")
 print("Version: 0.1alpha")

@@ -1,4 +1,6 @@
-# ngrok-n-roll
+<h1 align="center">
+ngrok-n-roll
+</h1>
 
 <!-- Shields -->
 <p align="center">
@@ -7,6 +9,10 @@
 <img src="https://img.shields.io/badge/Status-active-success.svg">
 </p>
 
+<p align="center">
 Simple ngrok port scanner &amp; bruteforcer
+</p>
 
-# FOR EDUCATION PURPOSE ONLY
+<h3 align="center">
+FOR EDUCATION PURPOSE ONLY
+</h3>

@@ -5,7 +5,7 @@ ngrok-n-roll
 <!-- Shields -->
 <p align="center">
 <img src="https://img.shields.io/badge/Version-0.1alpha-orange.svg">
-<img src="https://img.shields.io/badge/Language-Python3-blue.svg">
+<img src="https://img.shields.io/badge/language-golang-blue.svg">
 <img src="https://img.shields.io/badge/Status-active-success.svg">
 </p>
 

